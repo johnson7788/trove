@@ -65,7 +65,7 @@ def main():
         else:
             prompt = template.render(**prompt_args)
             write_prompt(fw_log, prompt, "", index)
-
+        print(f"样本: {index}的最终Prompt是: {prompt}")
         # output
         max_tokens = len(tokenizer(prompt)["input_ids"]) + args.max_new_tokens
         response_list = pipeline(

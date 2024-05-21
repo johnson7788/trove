@@ -323,7 +323,7 @@ def format_toolbox(toolbox: dict[str, dict[str, str]], topk: int = 10) -> str:
     toolbox_str_list = []
     for tool_name,_ in name_freq_list[: topk]:
         tool_dict = toolbox[tool_name]
-        tool_str = f"# {tool_dict['docstr']}\n{tool_dict['signature']}"
+        tool_str = f"# {tool_dict['docstr']}\n{tool_dict['signature']}"  #docstr：函数的文档， signature：函数的名称和参数
         toolbox_str_list.append(wrap_code(tool_str))
     return '\n'.join(toolbox_str_list)
 

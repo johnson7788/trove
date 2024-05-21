@@ -1,11 +1,10 @@
 # %% from sympy import symbols (import)
 from sympy import symbols
 
-# %% The function searches for positive integer arithmetic sequences that meet the given conditions and prints the first n terms.
+# %% 该函数寻找满足给定条件的正整数等差数列并打印前n项。
 def find_arithmetic_term(term_index_1, term_index_2, product, print_term):
     """
-    该函数寻找满足给定条件的正整数等差数列并打印前n项。
-
+    The function searches for positive integer arithmetic sequences that meet the given conditions and prints the first n terms.
     Args:
         term_index_1 (int): 第一个用于计算乘积的项的索引位置。
         term_index_2 (int): 第二个用于计算乘积的项的索引位置。
