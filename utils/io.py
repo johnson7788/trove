@@ -32,6 +32,7 @@ def dump_json_file(data: dict | list[dict], path: str):
                 fw.write(json.dumps(item) + "\n")
     else:
         raise ValueError(f"Invalid file type: {path}")
+    print(f"保存文件到：{path}, 共{len(data)}条记录")
 
 
 def load_gqa_dataset(

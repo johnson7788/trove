@@ -32,6 +32,7 @@ def main():
     # library， 最开始，每个toolbox下的每个项目都是空的，例如这里的'toolbox/math.py'是空的
     library_path = os.path.join("toolbox", f"{args.task_name}.py")
     default_library = load_toolbox(library_path)  # 加载了2遍，可以deep COPY啊
+    print(f"默认的工具箱中的工具数量: {len(default_library)}")
     library = load_toolbox(library_path)
     print(f"开始加载模型{args.model_name}，可能耗时较长")
     # configure generation pipeline， 加载模型'codellama/CodeLlama-7b-Instruct-hf'
@@ -149,7 +150,7 @@ def main():
             ) #获取模型的运行结果
             best_import_index = select_best_solution(import_resp_list)  #选中最好的解决方式
             candidate_list.append(import_resp_list[best_import_index]) #加入候选
-            print(f"模型一共提出了: {len(import_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in import_resp_list if i['is_correct']])}个")
+            print(f"模型import模式一共提出了: {len(import_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in import_resp_list if i['is_correct']])}个")
         if "create" in modes:
             print(f"开始尝试第{index}个样本的create模式解决现有问题")
             create_resp_list = get_example_responses(
@@ -157,7 +158,7 @@ def main():
             ) #获取模型的运行结果
             best_create_index = select_best_solution(create_resp_list)
             candidate_list.append(create_resp_list[best_create_index])
-            print(f"模型一共提出了: {len(create_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in create_resp_list if i['is_correct']])}个")
+            print(f"模型create模式一共提出了: {len(create_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in create_resp_list if i['is_correct']])}个")
         if "skip" in modes:
             print(f"开始尝试第{index}个样本的skip模式解决现有问题")
             skip_resp_list = get_example_responses(
@@ -165,7 +166,7 @@ def main():
             )
             best_skip_index = select_best_solution(skip_resp_list)
             candidate_list.append(skip_resp_list[best_skip_index])
-            print(f"模型一共提出了: {len(skip_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in skip_resp_list if i['is_correct']])}个")
+            print(f"模型skip模式一共提出了: {len(skip_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in skip_resp_list if i['is_correct']])}个")
 
         best_resp_index = select_best_solution(candidate_list)
         best_mode = modes[best_resp_index]  #eg: 'create',表示create模式生成的解决方案效果最好
@@ -216,10 +217,10 @@ def main():
 
     correct_list = [r["response"]["is_correct"] for r in result_list]
     acc = sum(correct_list) / len(correct_list)
-    print(f"Overall Response Accuracy: {acc:.2f}")
-    print(f"Toolbox Size: #{len(library)}")
-    fw_log.write(f"\n## Overall Response Accuracy: {acc:.2f}\n")
-    fw_log.write(f"Toolbox Size: #{len(library)}")
+    print(f"整体回复准确率: {acc:.2f}")
+    print(f"现有工具箱的大小: #{len(library)}")
+    fw_log.write(f"\n## 整体回复准确率: {acc:.2f}\n")
+    fw_log.write(f"现有工具箱的大小: #{len(library)}")
 
 
     # update solutions of examples missing tools
@@ -231,20 +232,18 @@ def main():
 
     correct_list = [r["response"]["is_correct"] for r in result_list]
     acc = sum(correct_list) / len(correct_list)
-    print(f"Updated Response Accuracy: {acc:.2f}")
+    print(f"经过Trim更新过期工具后，最终回复准确率: {acc:.2f}")
 
-    fw_log.write(f"\n## Overall Response Accuracy: {acc:.2f}\n")
-    fw_log.write(f"Toolbox Size: #{len(library)}")
+    fw_log.write(f"\n## 经过Trim更新过期工具后，最终回复准确率: {acc:.2f}\n")
+    fw_log.write(f"现有工具箱的大小: #{len(library)}")
     for name, d in library.items():
         fw_log.write(f"=== {name} ===\n")
         fw_log.write(d["function"])
         fw_log.write('\n\n\n')
     fw_log.close()
-
+    print(f"保存所有的模型输出和工具输出")
     dump_json_file(result_list, args.output_results_path)
     dump_toolbox(library, args.output_library_path)
-
-
 
 
 if __name__ == "__main__":

@@ -330,3 +330,4 @@ def dump_toolbox(
         for tool_dict in toolbox.values():
             fw.write(f"{delimiter} {tool_dict['docstr']} ({tool_dict['type']})\n")
             fw.write(tool_dict['function'] + '\n\n\n')
+    print(f"保存工具箱到{toolbox_path}")
