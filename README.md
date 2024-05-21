@@ -59,3 +59,35 @@ python -m utils.eval --results_path ${RESULTS_PATH}
 ```
 
 
+
+
+## 工具箱中每个工具的格式
+#%%开头表示是工具的描述
+然后下面是工具的主要内容
+```python
+# %% Locate object bounding boxes in the image
+import requests
+from PIL import Image
+
+def locate_objects(image: str | Image.Image, object_name: str) -> list:
+    """Load object bounding boxes in the image.
+    Args:
+        image: str, file name of the image
+        object: str, natural language description of the object
+    Rets:
+        selected_boxes: box regions of the found object(s)
+    """
+    params = {"object_name": object_name}
+
+    if not isinstance(image, str):
+        image.save("tmp.jpg")
+        params["image_name"] = "tmp.jpg"
+    else:
+        params["image_name"] = image
+
+    r = requests.get(
+        "http://127.0.0.1:8000/loc", params=params
+    )
+    return r.json()["boxes"] 
+
+```

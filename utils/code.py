@@ -310,6 +310,13 @@ def load_toolbox(
 
 
 def format_toolbox(toolbox: dict[str, dict[str, str]], topk: int = 10) -> str:
+    """
+    TODO: 选择使用频率最高的前10个工具，这个好像也不是特别合适，应该是根据问题，自动选择合适的工具
+    Args:
+        toolbox ():
+        topk ():
+    Returns:
+    """
     name_freq_list = [(name, d["frequency"]) for name,d in toolbox.items()]
     name_freq_list = sorted(name_freq_list, key=lambda x: -x[1])
 

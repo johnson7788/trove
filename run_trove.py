@@ -76,7 +76,7 @@ def main():
             r = extract_llama_response(r["generated_text"], input_text=prompt)
             resp_dict_list.append(parse_model_response(r))
 
-        # execute
+        #对模型生成的代码进行执行验证结果
         for j, res in enumerate(resp_dict_list):
             # collect code pieces
             code_pieces = []
