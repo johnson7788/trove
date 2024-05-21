@@ -15,7 +15,7 @@ def execute_code_wrapped(
 
         # execute code file
         result = subprocess.run(
-            ['python', exec_file], 
+            ['python3', exec_file],
             capture_output=True, 
             check=False, text=True,
             timeout=timeout,

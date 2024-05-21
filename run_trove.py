@@ -5,6 +5,7 @@ import math
 import torch
 import random
 import argparse
+from tqdm import tqdm
 import transformers
 from utils import *
 from mako.template import Template
@@ -12,6 +13,8 @@ from transformers import AutoTokenizer
 
 
 def main():
+    output = subprocess.run(['which', 'python3'], capture_output=True)
+    print(f"要使用的运行LLM输出的工具的python环境是:(确保exec.py中的subprocess.run的配置是python3): \n{output}")
     # load dataset and prompt templates
     dataset = load_dataset(args.task_name, args.max_num_examples)
     if args.shuffle_seed is not None:
@@ -51,7 +54,7 @@ def main():
     def get_example_responses(
         example: dict, index: int, template: Template, library: dict,
     ) -> list[dict]:
-        """Get model responses [solution + function(s)] for an example. """
+        """Get model responses [solution + function(s)] for an example. 每种方式的模板不同"""
         # input
         prompt_args = PROMPT_ARGS_FUNC[args.task_name](example)
         if len(library) > 0 or args.task_name.startswith("math"):
@@ -67,7 +70,7 @@ def main():
         response_list = pipeline(
             prompt, do_sample=True, max_length=max_tokens, **stable_gen_args
         )
-        resp_dict_list = []
+        resp_dict_list = [] #一次回答生成的答案可能有多个
         for r in response_list:
             r = extract_llama_response(r["generated_text"], input_text=prompt)
             resp_dict_list.append(parse_model_response(r))
@@ -109,7 +112,7 @@ def main():
 
             # update results, log, and library
             resp_dict_list[j].update(exec_dict)
-            write_exec_result(fw_log, exec_dict, index=j)
+            write_exec_result(fw_log, exec_dict, index=j) #记录1条日志
             write_solution_and_tools(fw_log, res, library, update_toolbox=False, index=j)
 
         return resp_dict_list
@@ -140,40 +143,44 @@ def main():
         """Multi-way generation of selected modes."""
         candidate_list = []
         if "import" in modes:  # import模式， 只导入和使用
+            print(f"开始尝试第{index}个样本的import模式解决现有问题")
             import_resp_list = get_example_responses(
                 example, index, template_import, library
-            )
-            best_import_index = select_best_solution(import_resp_list)
-            candidate_list.append(import_resp_list[best_import_index])
-
+            ) #获取模型的运行结果
+            best_import_index = select_best_solution(import_resp_list)  #选中最好的解决方式
+            candidate_list.append(import_resp_list[best_import_index]) #加入候选
+            print(f"模型一共提出了: {len(import_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in import_resp_list if i['is_correct']])}个")
         if "create" in modes:
+            print(f"开始尝试第{index}个样本的create模式解决现有问题")
             create_resp_list = get_example_responses(
                 example, index, template_create, default_library
-            )
+            ) #获取模型的运行结果
             best_create_index = select_best_solution(create_resp_list)
             candidate_list.append(create_resp_list[best_create_index])
-
+            print(f"模型一共提出了: {len(create_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in create_resp_list if i['is_correct']])}个")
         if "skip" in modes:
+            print(f"开始尝试第{index}个样本的skip模式解决现有问题")
             skip_resp_list = get_example_responses(
                 example, index, template_skip, default_library
             )
             best_skip_index = select_best_solution(skip_resp_list)
             candidate_list.append(skip_resp_list[best_skip_index])
+            print(f"模型一共提出了: {len(skip_resp_list)}种解决方案，和答案匹配正确的有: {len([i for i in skip_resp_list if i['is_correct']])}个")
 
         best_resp_index = select_best_solution(candidate_list)
-        best_mode = modes[best_resp_index]
+        best_mode = modes[best_resp_index]  #eg: 'create',表示create模式生成的解决方案效果最好
         best_resp = candidate_list[best_resp_index]
 
         if best_mode == "import":
             update_library(best_resp["function"], library, match_old=True)
         if (best_mode == "create") and (best_resp["is_success"]):
-            update_library(best_resp["function"], library, match_old=False)
+            update_library(best_resp["function"], library, match_old=False) # 更新工具库
 
         return {"mode": best_mode, "response": best_resp}
 
 
     def trim_library(n: int, library: dict) -> dict:
-        """Trimming low-frequency functions from the library."""
+        """Trimming low-frequency functions from the library，删掉低频率使用的工具"""
         threshold = math.log(n, 20)
         print(
             f"Trimming library of size #{len(library)}",
@@ -192,7 +199,7 @@ def main():
     result_list = []
     trimmed_indices = set()
 
-    for i, ex in enumerate(dataset):
+    for i, ex in enumerate(tqdm(dataset,desc="进度")):
         # multi-channel (3-way) generation, 加载3种生成工具的方式
         result_dict = multi_way_generation(
             example=ex, index=i,
@@ -260,7 +267,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_num_examples", type=int, default=None,
                         help="Maximum number of examples to generate.")
     parser.add_argument("--trim_steps", type=int, default=500,
-                        help="Trim library by threshold every N examples.")
+                        help="Trim library by threshold every N examples.删除低频率使用的工具，每隔多少个step检查1次工具库")
 
     # execution config
     parser.add_argument("--exec_file", type=str, default="tmp_exec_online.py",

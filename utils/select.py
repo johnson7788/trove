@@ -4,7 +4,7 @@ import ast
 from utils.code import unwrap_code
 
 def get_ast_depth(code: str) -> int:
-    root = ast.parse(code)
+    root = ast.parse(code)  # 解析生成的python代码，获取python代码的深度？
     total_depth = 0
 
     def depth_ast(root): 
@@ -37,7 +37,7 @@ def select_best_solution(response_list: list[dict], is_test: bool = True) -> int
         if len(correct_indices) == 0:
             correct_indices = get_true_responses(response_list, key="is_success")
     else:
-        correct_indices = get_true_responses(response_list, key="is_success")
+        correct_indices = get_true_responses(response_list, key="is_success") # 获取所有运行成功的记录
     if len(correct_indices) == 0: return 0
 
     # find majority answer
