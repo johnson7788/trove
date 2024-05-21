@@ -216,13 +216,13 @@ def parse_import_tools(code_or_lines: str | list[str]) -> list[dict]:
 # %% Tool Parsing
 
 def parse_tools_in_chunk(code_chunk: str) -> list[dict]:
-    """Parse all tools in one wrapped code chunk.
+    """Parse all tools in one wrapped code chunk. 如果有def或者import，都算是工具
     - if a function definition is found, it's an ADD/EDIT tool
     - if only import statements are found, it's an IMPORT tool
     - otherwise, not a valid tool
     """
     code_lines = code_chunk.split("\n")
-    # if definition line is found
+    # if definition line is found， 发现def()这样的函数
     def_indices = [i for i,l in enumerate(code_lines) if is_def_line(l)]
     if len(def_indices) > 0:
         tools_list = parse_function_tools(code_lines, def_indices)

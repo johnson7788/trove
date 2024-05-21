@@ -16,7 +16,7 @@ def main():
     dataset = load_dataset(args.task_name, args.max_num_examples)
     if args.shuffle_seed is not None:
         random.Random(args.shuffle_seed).shuffle(dataset)
-    # prompt templates
+    # prompt templates, mako的模板语法，就是把模板中的变量进行替换
     create_path = os.path.join("prompt", args.task_name, "online_create.md")
     template_create = Template(filename=create_path)
     import_path = os.path.join("prompt", args.task_name, "online_import.md")
@@ -26,17 +26,17 @@ def main():
 
     if '/' in args.task_name:
         args.task_name = args.task_name.split('/')[0]
-    # library
+    # library， 最开始，每个toolbox下的每个项目都是空的，例如这里的'toolbox/math.py'是空的
     library_path = os.path.join("toolbox", f"{args.task_name}.py")
-    default_library = load_toolbox(library_path)
+    default_library = load_toolbox(library_path)  # 加载了2遍，可以deep COPY啊
     library = load_toolbox(library_path)
-
-    # configure generation pipeline
+    print(f"开始加载模型{args.model_name}，可能耗时较长")
+    # configure generation pipeline， 加载模型'codellama/CodeLlama-7b-Instruct-hf'
     pipeline = transformers.pipeline(
         "text-generation", model=args.model_name,
         torch_dtype=torch.float16, device_map="auto",
     )
-    pipeline.tokenizer.pad_token_id = pipeline.model.config.eos_token_id
+    pipeline.tokenizer.pad_token_id = pipeline.model.config.eos_token_id  #把padding token赋值成eos token, eos_token_id:2, pad_token_id这里已经是2了，为什么这么做？
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     stable_gen_args = {
         "num_return_sequences": args.num_return_sequences,
@@ -45,7 +45,7 @@ def main():
         "eos_token_id": tokenizer.eos_token_id,
         "pad_token_id": tokenizer.eos_token_id,
     }
-    
+    print(f"模型{args.model_name}加载完成")
     fw_log = open(args.output_log_path, 'w')
 
     def get_example_responses(
@@ -81,9 +81,9 @@ def main():
             for func_dict in res["function"]:
                 code_pieces.append(func_dict["function"])
             code_pieces.append(unwrap_code(res["solution"]))
-            code_pieces = clean_import(code_pieces)
+            code_pieces = clean_import(code_pieces)  #去掉import的行
 
-            # execute, evaluate
+            #执行和验证
             is_success, exec_output = execute_code_wrapped(
                 code_pieces=code_pieces,
                 exec_file=args.exec_file,
@@ -139,7 +139,7 @@ def main():
     ) -> dict:
         """Multi-way generation of selected modes."""
         candidate_list = []
-        if "import" in modes:
+        if "import" in modes:  # import模式， 只导入和使用
             import_resp_list = get_example_responses(
                 example, index, template_import, library
             )
@@ -193,7 +193,7 @@ def main():
     trimmed_indices = set()
 
     for i, ex in enumerate(dataset):
-        # multi-channel (3-way) generation
+        # multi-channel (3-way) generation, 加载3种生成工具的方式
         result_dict = multi_way_generation(
             example=ex, index=i,
             modes=["import", "create", "skip"]
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
     # execution config
     parser.add_argument("--exec_file", type=str, default="tmp_exec_online.py",
-                        help="Temporary execution file.")
+                        help="LLM生成的代码保存到临时执行文件后执行")
     parser.add_argument("--exec_timeout", type=int, default=100,
                         help="Timeout for execution in seconds.")
 
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     parser.add_argument("--top_p", type=float, default=0.95)
     parser.add_argument("--num_return_sequences", type=int, default=1)
     parser.add_argument("--temperature", type=float, default=0.3)
-    parser.add_argument("--max_new_tokens", type=int, default=256)
+    parser.add_argument("--max_new_tokens", type=int, default=256,help="最多生成的新的token数量")
 
     args = parser.parse_args()
     args.suffix = "trove"

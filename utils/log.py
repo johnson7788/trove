@@ -9,7 +9,7 @@ def write_prompt(
     index: int | str, 
     solution_first: bool = True,
 ):
-    curr_ex_start = prompt.rindex("**Question**")
+    curr_ex_start = prompt.rindex("**Question**")  # 对要保存到日志的prompt进行处理，只保留一些关键内容
     sub_prompt = prompt[curr_ex_start: ].rstrip()
     if solution_first:
         keyword_prompt = "**Solution**"
@@ -101,13 +101,13 @@ def auto_decide_path(
             args.run_index = 0
     updated_name = f"run{args.run_index}.json"
     args.output_results_path = os.path.join(results_dir, updated_name)
-    print(f"Output Results Path: {args.output_results_path}")
+    print(f"输出结果路径: {args.output_results_path}")
 
     # logging
     if "log" in fields:
         log_name = f"run{args.run_index}.md"
         args.output_log_path = os.path.join(log_dir, log_name)
-        print(f"Log Path: {args.output_log_path}")
+        print(f"日志路径: {args.output_log_path}")
 
     # library
     if "library" in fields:

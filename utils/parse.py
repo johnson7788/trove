@@ -36,7 +36,7 @@ def parse_model_response(
     # 'solution' post-processing
     solution_resp = solution_resp.strip()  # (text) + ```python\n(code)```
 
-    # 'tools' post-processing
+    # 'tools' post-processing, 解析出代码来
     tool_dict_list = parse_tools(tool_resp.strip())  # list[dict]
 
     return {

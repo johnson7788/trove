@@ -12,3 +12,4 @@ augly
 diffusers
 accelerate>=0.13.2
 ipykernel
+pandas
