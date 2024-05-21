@@ -65,7 +65,7 @@ def main():
         else:
             prompt = template.render(**prompt_args)
             write_prompt(fw_log, prompt, "", index)
-        print(f"样本{index}的最终Prompt是:\n{prompt}")
+        # print(f"样本{index}的最终Prompt是:\n{prompt}")
         # output
         max_tokens = len(tokenizer(prompt)["input_ids"]) + args.max_new_tokens
         response_list = pipeline(
@@ -75,7 +75,7 @@ def main():
         for r in response_list:
             r = extract_llama_response(r["generated_text"], input_text=prompt)
             resp_dict_list.append(parse_model_response(r))
-
+        print(f"生成的答案是: {resp_dict_list}")
         #对模型生成的代码进行执行验证结果
         for j, res in enumerate(resp_dict_list):
             # collect code pieces
@@ -232,9 +232,9 @@ def main():
 
     correct_list = [r["response"]["is_correct"] for r in result_list]
     acc = sum(correct_list) / len(correct_list)
-    print(f"经过Trim更新过期工具后，最终回复准确率: {acc:.2f}")
+    print(f"经过Trim更新过工具后，最终回复准确率: {acc:.2f}")
 
-    fw_log.write(f"\n## 经过Trim更新过期工具后，最终回复准确率: {acc:.2f}\n")
+    fw_log.write(f"\n## 经过Trim更新过工具后，最终回复准确率: {acc:.2f}\n")
     fw_log.write(f"现有工具箱的大小: #{len(library)}")
     for name, d in library.items():
         fw_log.write(f"=== {name} ===\n")
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", type=str, 
                         default="codellama/CodeLlama-7b-Instruct-hf")
     parser.add_argument("--top_p", type=float, default=0.95)
-    parser.add_argument("--num_return_sequences", type=int, default=1)
+    parser.add_argument("--num_return_sequences", type=int, default=1, help="每个问题生成多少个结果")
     parser.add_argument("--temperature", type=float, default=0.3)
     parser.add_argument("--max_new_tokens", type=int, default=256,help="最多生成的新的token数量")
 

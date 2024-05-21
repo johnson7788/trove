@@ -1,7 +1,5 @@
-"""Program Execution Utilities."""
-
+"""执行LLM生成的python代码块"""
 import subprocess
-
 
 def execute_code_wrapped(
     code_pieces: list[str], 

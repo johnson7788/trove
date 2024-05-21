@@ -1,4 +1,4 @@
-"""Selection Heuristics for Multuple Solution/Tools Candidates."""
+"""Selection Heuristics for Multuple Solution/Tools Candidates. 当LLM生成多个方案时，选择最优的方案"""
 
 import ast 
 from utils.code import unwrap_code

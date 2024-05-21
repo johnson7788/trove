@@ -42,6 +42,7 @@ def unwrap_code(text: str) -> str:
 
 
 def clean_import(code_pieces: list[str]) -> list[str]:
+    """清除多余的import语句"""
     cleaned_pieces = []
     for code in code_pieces:
         code_lines = code.split('\n')
@@ -56,16 +57,17 @@ def clean_import(code_pieces: list[str]) -> list[str]:
 
 # %% Function Tools
 def is_def_line(line: str) -> bool:
-    """Check if the line string is a function definition line.
+    """检查给定的行是不是def 定义的函数
     E.g., 'def check_exists(item) -> bool:'
     """
     return all([(symbol in line) for symbol in ['def', '(', ')', ':']])
 
 
 def get_function_docstr(function: str) -> str:
-    """Get the docstring of a tool function."""
+    """获取工具函数中的 docstring"""
     if '"""' not in function: return ""
     docstr_start = function.index('"""') + 3
+    # 不要解释参数的部分？为啥不要
     if "Args:" in function[docstr_start: ]:
         docstr_end = function.index('Args:', docstr_start)
     else: 
@@ -74,15 +76,15 @@ def get_function_docstr(function: str) -> str:
 
 
 def get_function_name(function: str) -> str: 
-    """Get the function name of the tool."""
-    assert "def" in function
+    """获取生成的函数的名称."""
+    assert "def" in function, f"内容{function}必须包含def关键字"
     def_index = function.index("def") + 3
     end_index = function.index('(', def_index)
     return function[def_index: end_index].strip()
     
 
 def get_function_signature(function: str) -> str:
-    """Get function signature of the tool."""
+    """获取函数的名称和参数部分"""
     assert "def" in function
     def_index = function.index("def") + 3
     mid_index = function.index(')', def_index)
@@ -257,7 +259,7 @@ def parse_tools(text: str) -> list[dict[str, str]]:
 
 
 # %% Toolbox
-
+#每个工具之间的分隔符
 DELIMITER = "# %%"
 
 def load_toolbox(

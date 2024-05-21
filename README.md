@@ -47,8 +47,8 @@ python baseline.py --task_name "math/algebra" --suffix "primitive"  # or "instan
 
 Note that for GQA dataset, we implement the `locate_objects` and `visual_qa` functions as fast apis.
 So you need to launch the server first (as below), then run the trove/baseline experiments.
-
-```bash
+启动1个图像问答和图像定位的API接口，toolbox/gqa.py中写了2个工具，可以使用这些接口
+```bash 
 uvicorn server.gqa:app
 ```
 
@@ -57,8 +57,6 @@ uvicorn server.gqa:app
 ```python
 python -m utils.eval --results_path ${RESULTS_PATH}
 ```
-
-
 
 
 ## 工具箱中每个工具的格式
